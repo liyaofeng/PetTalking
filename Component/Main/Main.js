@@ -13,9 +13,10 @@ import {
 
 import { StackNavigator } from 'react-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Mock from 'mockjs';
 import { NavigationBarBgColor, NavigationTitleColor, ScreenWidth } from '../Commond/Config';
 import Network, { RequestUrl } from '../Commond/Network'
+
+import VideoDetail from './VideoDetail'
 
 var RequestConfig = {
   page: 0,
@@ -24,7 +25,6 @@ var RequestConfig = {
 };
 
 class Main extends Component {
-
   static navigationOptions = {
     tabBarLabel: '首页',
     tabBarIcon: ({ tintColor }) => (
@@ -84,7 +84,7 @@ class Main extends Component {
 
   _renderRow(rowData) {
     return (
-      <RowItem rowData = {rowData} />
+      <RowItem rowData = {rowData} superView = {this} />
     );
   }
 
@@ -181,11 +181,17 @@ class Main extends Component {
       });
     }, 2000);
   }
+
+  _toVideoDetail(data) {
+    console.log(data);
+    this.props.navigation.navigate('VideoDetail', { data: data });
+  }
 }
 
 class RowItem extends Component {
   static defaultProps = {
-    rowData: {}
+    rowData: {},
+    superView: null
   }
 
   constructor(props) {
@@ -203,6 +209,7 @@ class RowItem extends Component {
     return (
       <TouchableOpacity
         activeOpacity = {0.8}
+        onPress = {() => this.props.superView._toVideoDetail(rowData)}
       >
         <View style = {styles.rowStyle}>
           <Text style = {styles.titleStyle}>{rowData.title}</Text>
@@ -267,6 +274,7 @@ class RowItem extends Component {
 
 export default StackNavigator({
   Main: { screen: Main },
+  VideoDetail: { screen: VideoDetail }
 });
 
 const styles = StyleSheet.create({
@@ -304,6 +312,8 @@ const styles = StyleSheet.create({
   },
 
   toolViewStyle: {
+    paddingLeft: ScreenWidth / 10,
+    paddingRight: ScreenWidth / 10,
     flexDirection: 'row',
     alignItems: 'center',
     height: 44
