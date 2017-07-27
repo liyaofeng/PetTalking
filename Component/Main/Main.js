@@ -7,7 +7,8 @@ import {
   ListView,
   Image,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 
 import { StackNavigator } from 'react-navigation';
@@ -49,7 +50,8 @@ class Main extends Component {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 != r2});
     this.state = {
       dataSource: ds.cloneWithRows([]),
-      isLoading: false
+      isLoading: false,
+      isRefreshing: true
     };
   }
 
@@ -62,6 +64,15 @@ class Main extends Component {
           enableEmptySections
           onEndReached = {this._fecthMoreData.bind(this)}
           renderFooter = {this._renderFooter.bind(this)}
+          refreshControl={
+            <RefreshControl
+              refreshing = {this.state.isRefreshing}
+              onRefresh = {this._onRefresh.bind(this)}
+              tintColor = {NavigationBarBgColor}
+              colors = {['#ff0000', '#00ff00', '#0000ff']}
+              progressBackgroundColor = "#ffff00"
+          />
+        }
         />
       </View>
  		);
@@ -73,45 +84,27 @@ class Main extends Component {
 
   _renderRow(rowData) {
     return (
-      <TouchableOpacity
-        activeOpacity = {0.8}
-      >
-        <View style = {styles.rowStyle}>
-          <Text style = {styles.titleStyle}>{rowData.title}</Text>
-          
-          <Image style = {styles.thumbStyle}
-            source = {{uri: rowData.thumb}}
-          >
-            <Icon style = {styles.playStyle}
-              name = {'ios-play-outline'}
-              size = {26}
-            />
-          </Image>
-          
-          <View style = {styles.toolViewStyle}>
-            <TouchableOpacity style = {styles.likeViewStyle}>
-              <Icon style = {styles.toolIconStyle}
-                name = {'ios-heart-outline'}
-                size = {22}
-              />
-              <Text style = {styles.toolTextStyle}>喜欢</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style = {styles.commentViewStyle}>
-              <Icon style = {styles.toolIconStyle}
-                name = {'ios-chatboxes-outline'}
-                size = {22}
-              />
-              <Text style = {styles.toolTextStyle}>评论</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableOpacity>
+      <RowItem rowData = {rowData} />
     );
+  }
+
+  _onRefresh() {
+    if (this.state.isRefreshing) {
+      return;
+    }
+
+    this.setState({
+      isRefreshing: true
+    });
+
+    setTimeout(() => {
+      this._fecthData();
+    }, 3000);
   }
 
   _renderFooter() {
     if (this.state.isLoading) {
-      return <ActivityIndicator color = {NavigationBarBgColor}/>
+      return <ActivityIndicator style = {styles.moreFooterStyle} color = {NavigationBarBgColor}/>
     }
     else {
       return null
@@ -130,7 +123,8 @@ class Main extends Component {
     })
     .then((data) => {
       this.setState({
-        isLoading: false
+        isLoading: false,
+        isRefreshing: false
       });
 
       if (data.success) {
@@ -142,13 +136,14 @@ class Main extends Component {
     })
     .catch((error) => {
       this.setState({
-        isLoading: false
+        isLoading: false,
+        isRefreshing: false
       });
     });
   }
 
   _fecthMoreData() {
-    if (this.state.isLoading) {
+    if (this.state.isLoading || this.state.isRefreshing) {
       return;
     }
 
@@ -184,7 +179,89 @@ class Main extends Component {
           isLoading: false
         });
       });
-    }, 3000);
+    }, 2000);
+  }
+}
+
+class RowItem extends Component {
+  static defaultProps = {
+    rowData: {}
+  }
+
+  constructor(props) {
+    super(props);
+    
+    var data = this.props.rowData
+    this.state = {
+      rowData: data,
+      isLiking: false
+    };
+  }
+
+  render() {
+    var rowData = this.state.rowData
+    return (
+      <TouchableOpacity
+        activeOpacity = {0.8}
+      >
+        <View style = {styles.rowStyle}>
+          <Text style = {styles.titleStyle}>{rowData.title}</Text>
+          
+          <Image style = {styles.thumbStyle}
+            source = {{uri: rowData.thumb}}
+          >
+            <Icon style = {styles.playStyle}
+              name = {'ios-play-outline'}
+              size = {26}
+            />
+          </Image>
+          
+          <View style = {styles.toolViewStyle}>
+            <TouchableOpacity style = {styles.likeViewStyle} onPress = {this._fecthLike.bind(this)}>
+              <Icon style = {styles.toolIconStyle}
+                name = {'ios-heart-outline'}
+                size = {22}
+                color = {rowData.like ? NavigationBarBgColor : null}
+              />
+              <Text style = {styles.toolTextStyle}>喜欢</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style = {styles.commentViewStyle}>
+              <Icon style = {styles.toolIconStyle}
+                name = {'ios-chatboxes-outline'}
+                size = {22}
+              />
+              <Text style = {styles.toolTextStyle}>评论</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    )
+  }
+
+  _fecthLike() {
+    if (this.state.isLiking) {
+      return;
+    }
+
+    isLiking = true;
+    Network.post(RequestUrl.videoLike, {
+      token: RequestConfig.token,
+      videoId: this.state.rowData.videoId,
+      like: !(this.state.rowData.like)
+    })
+    .then((thisData) => {
+      var data = this.state.rowData;
+      data.like = thisData.data.like;
+      this.setState({
+        rowData: data,
+        isLiking: false
+      });
+    })
+    .catch((error) => {
+      this.setState({
+        isLiking: false
+      });
+    });
   }
 }
 
@@ -258,6 +335,10 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     height: 22,
     textAlign: 'center'
+  },
+
+  moreFooterStyle: {
+    margin: 8
   }
 });
 
