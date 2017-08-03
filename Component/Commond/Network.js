@@ -6,7 +6,8 @@ const baseUrl = 'http://rapapi.org/mockjs/23160/';
 
 export var RequestUrl = {
 	videoList: 'api/videoList',
-	videoLike: 'api/like'
+	videoLike: 'api/like',
+	commentList: 'api/commentList',
 };
 
 var request = {};
@@ -26,6 +27,7 @@ request.get = function(url, params) {
 request.post = function(url, body) {
 	var fullUrl = baseUrl + url
 
+	console.log('network.js');
 	console.log(body);
 	var config = {
 		method: 'POST',

@@ -63,6 +63,7 @@ class Main extends Component {
           renderRow = {this._renderRow.bind(this)}
           enableEmptySections
           onEndReached = {this._fecthMoreData.bind(this)}
+          onEndReachedThreshold = {-30}
           renderFooter = {this._renderFooter.bind(this)}
           refreshControl={
             <RefreshControl
@@ -71,8 +72,8 @@ class Main extends Component {
               tintColor = {NavigationBarBgColor}
               colors = {['#ff0000', '#00ff00', '#0000ff']}
               progressBackgroundColor = "#ffff00"
-          />
-        }
+            />
+          }
         />
       </View>
  		);
