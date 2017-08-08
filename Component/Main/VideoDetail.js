@@ -72,7 +72,6 @@ export default class VideoDetail extends Component {
             ref = 'videoPalyer'
             style = {styles.videoStyle}
             source = {{uri: this.state.data.videoUrl}}
-            // source = {{uri: 'http://lksdjflksdjlk.com/sdfs'}}
             volume = {5}
             paused = {this.state.isPaused}
             rate = {1}
@@ -114,7 +113,6 @@ export default class VideoDetail extends Component {
           animationType={"fade"}
           transparent={false}
           visible={this.state.modalVisible}
-          // onRequestClose={this._onModalClose.bind(this)}
           >
           <View style={styles.modalViewStyle}>
             <Icon style={styles.dismissIconStyle}
@@ -124,7 +122,6 @@ export default class VideoDetail extends Component {
               onPress={this._pressDissmiss.bind(this)}
             />
             <TextInput style={styles.modalCommentStyle}
-              onChangeText={(text) => this.setState({text})}
               placeholder={'输入评论...'}
               multiline={true}
               autoFocus={true}
@@ -178,21 +175,12 @@ export default class VideoDetail extends Component {
     var temp = RequestConfig.dataSource.slice();
     temp.splice(2, 0, thisComment)
     RequestConfig.dataSource = temp;
-    // RequestConfig.dataSource.splice(2, 0, thisComment);
-    // RequestConfig.dataSource = RequestConfig.dataSource.slice(0, 4);
-    // RequestConfig.dataSource.push(thisComment);
     console.log(RequestConfig.dataSource);
     this.setState({
       modalVisible: false,
       dataSource: this.state.dataSource.cloneWithRows(RequestConfig.dataSource),
     });
   }
-
-  // _onModalClose() {
-  //   this.setState({
-  //     dataSource: this.state.dataSource.cloneWithRows(RequestConfig.dataSource)
-  //   });
-  // }
 
   _onFocus() {
     this.setState({
